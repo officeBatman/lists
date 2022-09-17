@@ -17,24 +17,23 @@
     <pre id="elm"></pre>
     <script src="elm.js"></script>
     <script>
-        function set(param) {
-            const key = param.key;
-            const value = param.value;
-            
+        const key = "elm-state";
+
+        function set(value) {
             localStorage.setItem(key, JSON.stringify(value));
         }
 
-        function get(key) {
+        function get() {
             return JSON.parse(localStorage.getItem(key));
         }
     </script>
     <script>
         var app = Elm.Main.init({
-            node: document.getElementById('elm')
+            node: document.getElementById('elm'),
+            flags: get()
         });
 
         app.ports.set.subscribe(set);
-        app.ports.get.subscribe(get);
     </script>
 
 </body>
