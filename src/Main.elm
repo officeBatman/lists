@@ -33,8 +33,6 @@ main =
 type alias Model =
     { nodes : Nodes
     , nextId : Id
-    , uiSize : Float
-
     --, currentlyEditing
     }
 
@@ -87,7 +85,6 @@ emptyModel =
                 , children = []
                 }
     , nextId = rootId |> nextId
-    , uiSize = 5
     }
 
 
@@ -117,10 +114,9 @@ encodeNodeInfo node =
 
 modelDecoder : Decode.Decoder Model
 modelDecoder =
-    Decode.map3 Model
+    Decode.map2 Model
         (Decode.field "nodes" (DecodeExtra.dict2 Decode.int nodeInfoDecoder))
         (Decode.field "nextId" Decode.int)
-        (Decode.field "uiSize" (Decode.oneOf [ Decode.float, Decode.succeed 1 ]))
 
 
 nodeInfoDecoder : Decode.Decoder NodeInfo
@@ -273,9 +269,18 @@ makeNode dict id =
             )
 
 
-size : Model -> Float -> Px
-size model x =
-    px (model.uiSize * x)
+taskFontSize : Px
+taskFontSize = px 40
+
+
+taskFont : Style
+taskFont =
+    batch
+        [ fontSize taskFontSize
+        , fontFamily monospace
+        , fontWeight normal
+        , lineHeight taskFont
+        ]
 
 
 view : Model -> Document Msg
@@ -297,7 +302,7 @@ view model =
                         , flexDirection column
                         , alignItems center
                         , justifyContent center
-                        , padding (size model 10)
+                        , padding (px 10)
                         ]
                     ]
                     [ viewRootNode
@@ -323,17 +328,14 @@ viewNode model isRoot (Node node) =
     div
         [ css
             [ maxWidth (pct 100)
+            , taskFont
             ]
         ]
         [ span
-            [ css
-                [ styleFlex
-                ]
+            [ css [ styleFlex ]
             ]
             [ span
-                [ css
-                    [ styleFlex
-                    ]
+                [ css [ styleFlex ]
                 ]
                 [ viewMarker model
                 , viewNodeTextInput model node.text (TextChange node.id)
@@ -357,7 +359,7 @@ viewNode model isRoot (Node node) =
             ]
         , div
             [ css
-                [ paddingLeft (size model 10)
+                [ paddingLeft (px 10)
                 ]
             ]
             [ viewNodes model node.children
@@ -369,11 +371,11 @@ viewMarker : Model -> Html Msg
 viewMarker model =
     span
         [ css
-            [ Css.width (size model 5)
-            , Css.height (size model 5)
-            , borderRadius (size model 10)
+            [ Css.width (px 5)
+            , Css.height (px 5)
+            , borderRadius (px 10)
             , backgroundColor (rgb 0 0 0)
-            , marginRight (size model 10)
+            , marginRight (px 10)
             ]
         ]
         []
@@ -396,9 +398,10 @@ viewNodeTextInput model text msg =
         , onInput msg
         , css
             [ border (px 0)
-            , marginTop (size model 2)
-            , marginBottom (size model 2)
+            , marginTop (px 2)
+            , marginBottom (px 2)
             , flexGrow (int 2)
+            , taskFont
             ]
         ]
         []
@@ -447,9 +450,9 @@ crossedOut model el =
         , div
             [ css
                 [ position absolute
-                , top (calc (pct 50) minus (size model (height / 2)))
+                , top (calc (pct 50) minus (px (height / 2)))
                 , Css.width (pct 100)
-                , Css.height (size model height)
+                , Css.height (px height)
                 , backgroundColor (rgb 0 0 0)
                 ]
             ]
